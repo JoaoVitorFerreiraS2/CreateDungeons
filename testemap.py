@@ -1,7 +1,22 @@
 import random
 import cairo as ca
 
-grade = True
+mini_mapa = True 
+
+while(True):
+    grade = str(input('Grade [S | N]: ')).upper()
+    if (grade == "S"):
+        grade = True
+        break
+    elif (grade == "N"):
+        grade = False
+        break
+
+    else: 
+        ("Por favor, digite [S | N]")
+
+WIDTH = 200
+HEIGHT = 200
 
 class dir:
     def __init__(self, r):
@@ -37,7 +52,7 @@ class generate:
         self.width = w
         self.height = h
         self.m = mapboard(w, h)
-        self.root = (w // 2, h // 2)  # Corrigindo float para inteiro
+        self.root = (w // 2, h // 2)
 
     def outofbounds(self, x, y):
         return x < 0 or x >= self.width or y < 0 or y >= self.height
@@ -60,7 +75,8 @@ class generate:
             cy += rng.get()
 
     def draw(self, fname):
-        scale = 10  # Aumenta a escala para mais qualidade
+        scale = 10  # Escala do mapa principal
+        mini_scale = 2  # Escala do mini-mapa
         img_w, img_h = self.width * scale, self.height * scale
         surf = ca.ImageSurface(ca.FORMAT_ARGB32, img_w, img_h)
         ctx = ca.Context(surf)
@@ -70,8 +86,27 @@ class generate:
         ctx.rectangle(0, 0, img_w, img_h)
         ctx.fill()
 
-        if(grade == True):
-            # Desenhar grade (linhas cinza-escuro)
+        # Desenhar paredes (cinza escuro)
+        ctx.set_source_rgb(0.4, 0.4, 0.4)
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.m.get(x, y) == 1:
+                    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        nx, ny = x + dx, y + dy
+                        if self.outofbounds(nx, ny) or self.m.get(nx, ny) == 0:
+                            ctx.rectangle(x * scale, y * scale, scale, scale)
+                            ctx.fill()
+
+        # Desenhar corredores (branco)
+        ctx.set_source_rgb(1, 1, 1)
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.m.get(x, y) == 1:
+                    ctx.rectangle(x * scale, y * scale, scale, scale)
+                    ctx.fill()
+
+        # Desenhar grade (linhas cinza-escuro)
+        if (grade == True):    
             ctx.set_source_rgb(0.2, 0.2, 0.2)
             ctx.set_line_width(1)
             for x in range(0, img_w, scale):
@@ -81,21 +116,28 @@ class generate:
                 ctx.move_to(0, y)
                 ctx.line_to(img_w, y)
             ctx.stroke()
-        else:
-            print('Sem grade')
 
-        # Corredores brancos
-        ctx.set_source_rgb(1, 1, 1)
-        ctx.set_line_width(scale)
-        for x in range(self.width):
-            for y in range(self.height):
-                if self.m.get(x, y) == 1:
-                    ctx.rectangle(x * scale, y * scale, scale, scale)
-                    ctx.fill()
+        # Mini-mapa no canto inferior direito
+        if mini_mapa:
+            mini_x = img_w - (self.width * mini_scale) - 10
+            mini_y = img_h - (self.height * mini_scale) - 10
 
-        surf.write_to_png(fname)  # Salvar como PNG
+            # Fundo do mini-mapa (cinza escuro)
+            ctx.set_source_rgb(0.2, 0.2, 0.2)
+            ctx.rectangle(mini_x, mini_y, self.width * mini_scale, self.height * mini_scale)
+            ctx.fill()
+
+            # Desenhar corredores no mini-mapa
+            ctx.set_source_rgb(1, 1, 1)
+            for x in range(self.width):
+                for y in range(self.height):
+                    if self.m.get(x, y) == 1:
+                        ctx.rectangle(mini_x + x * mini_scale, mini_y + y * mini_scale, mini_scale, mini_scale)
+                        ctx.fill()
+
+        surf.write_to_png(fname)
 
 # Gerar mapa e salvar como PNG
-g = generate(100, 100)  # Tamanho do mapa
+g = generate(WIDTH, HEIGHT)
 g.corridors()
-g.draw("dungeon_grid.png")
+g.draw("dungeon_map.png")
