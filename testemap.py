@@ -1,7 +1,17 @@
 import random
 import cairo as ca
 
-mini_mapa = True 
+#Perguntas referentes
+while(True):
+    mini_mapa = str(input('MINI-MAPA [S | N]: ')).upper()
+    if (mini_mapa == "S"):
+        mini_mapa = True
+        break
+    elif (mini_mapa == "N"):
+        mini_mapa = False
+        break
+    else:
+        print("Por favor, digite [S | N]")    
 
 while(True):
     grade = str(input('Grade [S | N]: ')).upper()
@@ -13,10 +23,29 @@ while(True):
         break
 
     else: 
-        ("Por favor, digite [S | N]")
+        print("Por favor, digite [S | N]")
 
-WIDTH = 200
-HEIGHT = 200
+
+while(True):
+    WIDTH = str(input('Digite a Largura (Em pixel): ')).upper()
+    if (WIDTH.isdigit()):
+        WIDTH = int(WIDTH)
+        break
+    else: 
+        print("Somente é aceito números")
+
+while(True):
+    HEIGHT = str(input('Digite a Altura (Em pixel): ')).upper()
+    if (HEIGHT.isdigit()):
+        HEIGHT = int(HEIGHT)
+        break
+    else: 
+        print("Somente é aceito números")
+
+
+nomedugeon = str(input('Digite o nome da imagem: ')).lower()
+nomedugeon = nomedugeon + ".png"
+
 
 class dir:
     def __init__(self, r):
@@ -140,4 +169,4 @@ class generate:
 # Gerar mapa e salvar como PNG
 g = generate(WIDTH, HEIGHT)
 g.corridors()
-g.draw("dungeon_map.png")
+g.draw(nomedugeon)
